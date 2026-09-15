@@ -1,55 +1,36 @@
-name: Deploy to EC2
+# This is a basic workflow to help you get started with Actions
 
+name: CI
+
+# Controls when the workflow will run
 on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
     branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  deploy:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
 
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ec2-user
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            set -e
+      # Runs a single command using the runners shell
+      - name: Run a one-line script
+        run: echo Hello, world!
 
-            echo "======================================"
-            echo "Starting deployment..."
-            echo "======================================"
-
-            cd /home/ec2-user/node-cicd-demo/aws-ec2-cicd2
-
-            echo "1. Getting latest code..."
-            git fetch origin main
-            git reset --hard origin/main
-            git clean -fd
-
-            echo "2. Checking deployed commit..."
-            git rev-parse HEAD
-            git log -1 --oneline
-
-            echo "3. Installing dependencies..."
-            npm install
-
-            echo "4. Restarting PM2 application..."
-            if pm2 describe node-cicd-demo > /dev/null 2>&1; then
-              pm2 restart node-cicd-demo --update-env
-            else
-              pm2 start app.js --name node-cicd-demo
-            fi
-
-            pm2 save
-
-            echo "5. Checking PM2 status..."
-            pm2 status
-
-            echo "6. Deployment completed successfully!"
+      # Runs a set of commands using the runners shell
+      - name: Run a multi-line script
+        run: |
+          echo Add other actions to build,
+          echo test, and deploy your project.
